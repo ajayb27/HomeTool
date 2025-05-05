@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+  <meta charset="UTF-8">
+  <title>సగటు యూనిట్లు గణన</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Flatpickr CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(120deg, #74ebd5, #ACB6E5);
+      background-size: cover;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 15px;
+      color: #333;
+    }
+    .container {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 25px 20px;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      max-width: 400px;
+      width: 100%;
+    }
+    h1 {
+      margin-bottom: 20px;
+      font-size: 22px;
+      color: #444;
+      text-align: center;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+      text-align: left;
+      font-size: 15px;
+      font-weight: 500;
+    }
+    .input-group {
+      position: relative;
+      margin-bottom: 15px;
+    }
+    .input-group input[type="text"],
+    .input-group input[type="number"] {
+      width: 100%;
+      padding: 10px 40px 10px 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      box-sizing: border-box;
+    }
+    .input-group .calendar-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      font-size: 18px;
+      color: #555;
+    }
+    button {
+      width: 100%;
+      background-color: #4CAF50;
+      color: white;
+      padding: 12px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 16px;
+      font-weight: 500;
+      background: rgba(0,0,0,0.05);
+      padding: 15px;
+      border-radius: 10px;
+      color: #333;
+    }
+    .result-line {
+      display: flex;
+      justify-content: space-between;
+      margin: 6px 0;
+    }
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 20px;
+      }
+      button {
+        font-size: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>యూనిట్ల గణన</h1>
+  <form id="diffForm">
+    <label>గత బిల్‌ తేదీని నమోదు చేయండి:</label>
+    <div class="input-group">
+      <input type="text" id="date1" required>
+      <span class="calendar-icon">📅</span>
+    </div>
+    <label>గత నెల యూనిట్లు నమోదు చేయండి:</label>
+    <div class="input-group">
+      <input type="number" id="num1" required>
+    </div>
+    <label>ప్రస్తుత యూనిట్లు నమోదు చేయండి:</label>
+    <div class="input-group">
+      <input type="number" id="num2" required>
+    </div>
+    <button type="submit">యూనిట్లు గణించండి</button>
+  </form>
+  <div class="result" id="result" style="display:none;"></div>
+</div>
+
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script>
+  const today = new Date();
+  const lastMonthFirstDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+
+  flatpickr("#date1", {
+    defaultDate: lastMonthFirstDate,
+    disableMobile: true,
+    monthSelectorType: 'static',
+    dateFormat: "d/m/Y"
+  });
+  
+  document.addEventListener('DOMContentLoaded', function() {
+	  // Prefill if stored
+	  const savedDate = localStorage.getItem('lastDate');
+	  const savedUnits = localStorage.getItem('lastUnits');
+
+	  if (savedDate) document.getElementById('date1').value = savedDate;
+	  if (savedUnits) document.getElementById('num1').value = savedUnits;
+	});
+
+	document.getElementById('diffForm').addEventListener('submit', function(e) {
+	  e.preventDefault();
+
+	  const date1Str = document.getElementById('date1').value;
+	  const [day, month, year] = date1Str.split('/');
+	  const date1 = new Date(`${year}-${month}-${day}`);
+
+	  const num1 = parseFloat(document.getElementById('num1').value);
+	  const num2 = parseFloat(document.getElementById('num2').value);
+
+	  // Store in localStorage
+	  localStorage.setItem('lastDate', date1Str);
+	  localStorage.setItem('lastUnits', num1);
+
+	  const today = new Date();
+	  const dateDiff = Math.abs(Math.round((today - date1) / (1000 * 60 * 60 * 24)));
+	  const numDiff = Math.abs(num2 - num1);
+	  const avgPerMonth = (numDiff / (dateDiff / 30)).toFixed(2);
+
+	  document.getElementById('result').style.display = 'block';
+	  document.getElementById('result').innerHTML = `
+		<div class="result-line"><span>📅 రోజులు సంఖ్య:</span> <span>${dateDiff}</span></div>
+		<div class="result-line"><span>🔢 వినియోగించిన యూనిట్లు:</span> <span>${numDiff}</span></div>
+		<div class="result-line"><span>📊 సగటు యూనిట్లు / నెల:</span> <span>${avgPerMonth}</span></div>
+	  `;
+	});
+
+</script>
+
+</body>
+</html>
